@@ -12,7 +12,6 @@ const MOMENTUM_VALUES = ['On Track', 'Slipping', 'Stalled'];
 const connected = () => !!APPS_SCRIPT_URL;
 
 function momentumSlug(v) { return (v || '').toLowerCase().replace(/\s+/g, '-'); }
-function momentumEmoji(v) { return v === 'On Track' ? '✅' : v === 'Slipping' ? '🌤️' : v === 'Stalled' ? '⚠️' : '⏳'; }
 function categoryMeta(id) { return CATEGORIES.find(c => c.id === id); }
 function catBySlugOrLabel(v) { return CATEGORIES.find(c => c.id === v || c.label === v); }
 
@@ -66,9 +65,9 @@ function renderReviewBanners() {
   const { due, daysUntil } = reviewSchedule();
   const dateLabel = due.toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' });
   let headline, sub;
-  if (daysUntil === 0) { headline = '📅 Today’s a review day'; sub = dateLabel; }
-  else if (daysUntil === 1) { headline = '📅 Next review: tomorrow'; sub = dateLabel; }
-  else { headline = `📅 Next review: ${dateLabel}`; sub = `in ${daysUntil} days`; }
+  if (daysUntil === 0) { headline = 'Today is a review day'; sub = dateLabel; }
+  else if (daysUntil === 1) { headline = 'Next review: tomorrow'; sub = dateLabel; }
+  else { headline = `Next review: ${dateLabel}`; sub = `in ${daysUntil} days`; }
 
   document.getElementById('reviewBannerText').innerHTML = `${headline}<span class="sub">${sub}</span>`;
   document.getElementById('reviewBannerText2').innerHTML = `${headline}<span class="sub">${sub}</span>`;
@@ -109,6 +108,28 @@ function overallMomentumStats(latestMap) {
   return { pct: Math.round((onTrack / reviewed.length) * 100), reviewedCount: reviewed.length, total: EFFORTS.length };
 }
 
+function renderStatRow() {
+  const latestMap = latestMomentumByEffort();
+  const overall = overallMomentumStats(latestMap);
+  const { daysUntil } = reviewSchedule();
+  const reviewedCount = Object.keys(latestMap).length;
+
+  const stats = [
+    { label: 'Present focuses', value: EFFORTS.length },
+    { label: 'Categories', value: CATEGORIES.length },
+    { label: 'On track (latest)', value: overall ? `${overall.pct}%` : '—', sub: overall ? `${overall.reviewedCount} of ${EFFORTS.length} reviewed` : 'no reviews yet' },
+    { label: 'Next review', value: daysUntil === 0 ? 'Today' : daysUntil === 1 ? 'Tomorrow' : `${daysUntil}d`, sub: reviewedCount ? `${state.reviews.length ? new Set(state.reviews.map(r => r.date)).size : 0} reviews logged` : 'first review pending' },
+  ];
+
+  document.getElementById('statRow').innerHTML = stats.map(s => `
+    <div class="stat-tile">
+      <div class="stat-value">${s.value}</div>
+      <div class="stat-label">${s.label}</div>
+      ${s.sub ? `<div class="stat-sub">${s.sub}</div>` : ''}
+    </div>
+  `).join('');
+}
+
 function relativeDate(dateStr) {
   if (!dateStr) return '';
   const d = new Date(dateStr + 'T00:00:00');
@@ -125,7 +146,7 @@ function relativeDate(dateStr) {
 function effortCardHTML(effort, latestMap) {
   const latest = latestMap[effort.id];
   const badgeCls = latest ? `m-${momentumSlug(latest.momentum)}` : 'm-none';
-  const badgeText = `${momentumEmoji(latest && latest.momentum)} ${latest ? latest.momentum : 'Not yet reviewed'}`;
+  const badgeText = latest ? latest.momentum : 'Not yet reviewed';
   return `
     <div class="card">
       <div class="card-top">
@@ -371,7 +392,7 @@ function reviewItemHTML(e) {
       <div class="review-item-top">
         <span class="review-item-title">${e.effort}</span>
         <div class="momentum-row">
-          ${MOMENTUM_VALUES.map(v => `<button data-val="${v}">${momentumEmoji(v)} ${v}</button>`).join('')}
+          ${MOMENTUM_VALUES.map(v => `<button data-val="${v}">${v}</button>`).join('')}
         </div>
       </div>
       <p class="why-remind">Reminder — ${e.reason}</p>
@@ -445,6 +466,7 @@ async function loadReviews() {
   renderWheel();
   routeOverview();
   renderList();
+  renderStatRow();
 }
 
 function renderReviewHistory() {
@@ -460,11 +482,11 @@ function renderReviewHistory() {
     <div class="review-session">
       <div class="review-session-head">
         <span class="rdate">${date}</span>
-        <span class="review-session-summary">✅ ${counts['On Track']} on track · 🌤️ ${counts['Slipping']} slipping · ⚠️ ${counts['Stalled']} stalled</span>
+        <span class="review-session-summary">${counts['On Track']} on track · ${counts['Slipping']} slipping · ${counts['Stalled']} stalled</span>
       </div>
       ${entries.map(r => `
         <div class="review-entry" style="--cat:var(--c-${(catBySlugOrLabel(r.category) || {}).id || 'physical'})">
-          <span class="rcat">${r.effort || r.category} <span class="momentum-badge m-${momentumSlug(r.momentum)}">${r.momentum ? `${momentumEmoji(r.momentum)} ${r.momentum}` : '—'}</span></span>
+          <span class="rcat">${r.effort || r.category} <span class="momentum-badge m-${momentumSlug(r.momentum)}">${r.momentum || '—'}</span></span>
           ${r.notes ? `<p>${r.notes}</p>` : ''}
         </div>
       `).join('')}
@@ -514,4 +536,5 @@ renderList();
 setMode(localGet('goalsHub.mode', 'wheel'));
 renderReviewForm();
 renderReviewBanners();
+renderStatRow();
 loadReviews();
