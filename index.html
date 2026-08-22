@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Goals</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧭</text></svg>">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap top-inner">
+    <h1 class="brand-title">🧭 Goals</h1>
+    <div class="top-right">
+      <span class="date" id="todayLabel"></span>
+      <a class="sheet-link" id="sheetLinkHeader" href="#" target="_blank" rel="noopener">Sheet ↗</a>
+    </div>
+  </div>
+  <div class="wrap tabs-scroll">
+    <nav class="tabs">
+      <button data-view="overview" class="active">🧭 Overview</button>
+      <button data-view="review">🔄 Bi-Weekly Review</button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ===================== OVERVIEW ===================== -->
+  <section id="overview" class="view active">
+
+    <!-- ---------- VISION / DREAM BOARD ---------- -->
+    <div class="vision-hero">
+      <div class="hero-gradient">
+        <div class="hero-blob hero-blob-1"></div>
+        <div class="hero-blob hero-blob-2"></div>
+        <div class="hero-blob hero-blob-3"></div>
+        <p class="vision-eyebrow" id="visionSubtitle"></p>
+        <h2 class="vision-title" id="visionTitle"></h2>
+
+        <div class="review-banner on-gradient" id="reviewBanner">
+          <span class="review-banner-text" id="reviewBannerText"></span>
+          <button class="btn secondary" data-view-link="review">Go review →</button>
+        </div>
+      </div>
+
+      <div class="dream-grid" id="dreamGrid"></div>
+    </div>
+
+    <hr class="section-divider">
+
+    <p class="present-eyebrow">🎯 Present Focus</p>
+    <h2 class="present-title">What's driving it, week to week</h2>
+    <p class="present-sub">The efforts behind the vision — reviewed every two weeks to see what's actually working.</p>
+
+    <div class="mode-switch" id="modeSwitch">
+      <button data-mode="wheel" class="active">◎ Wheel</button>
+      <button data-mode="list">☰ List</button>
+    </div>
+
+    <!-- ---------- WHEEL MODE ---------- -->
+    <div id="wheelMode">
+
+      <div id="wheelView">
+        <div class="zoom-row">
+          <span>Zoom</span>
+          <button class="zoom-btn" id="zoomOut" aria-label="Zoom out">&minus;</button>
+          <span class="zoom-pct" id="zoomPct">100%</span>
+          <button class="zoom-btn" id="zoomIn" aria-label="Zoom in">&plus;</button>
+        </div>
+        <div class="wheel-scroll" id="wheelScroll">
+          <div class="wheel-wrap" id="wheelWrap">
+            <svg class="wheel-spokes" id="wheelSpokes" viewBox="0 0 100 100" preserveAspectRatio="none"></svg>
+            <div class="wheel-center">
+              <div class="wheel-center-count" id="wheelCount"></div>
+              <div class="wheel-center-label" id="wheelCountLabel">present focuses</div>
+            </div>
+            <div id="wheelNodes"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="categoryView" style="display:none">
+        <button class="back-link" id="backToWheel">&larr; All categories</button>
+        <div class="cat-detail-head">
+          <span class="icon" id="catIcon"></span>
+          <div>
+            <h2 id="catLabel"></h2>
+            <p class="cat-blurb" id="catBlurb"></p>
+          </div>
+        </div>
+        <div class="card-grid" id="categoryCards"></div>
+      </div>
+
+    </div>
+
+    <!-- ---------- LIST MODE ---------- -->
+    <div id="listMode" style="display:none">
+      <div class="chip-row" id="chipRow"></div>
+      <div id="catSections"></div>
+    </div>
+
+  </section>
+
+  <!-- ===================== BI-WEEKLY REVIEW ===================== -->
+  <section id="review" class="view">
+    <div class="section-head">
+      <h2 class="section-title">Bi-Weekly Review</h2>
+      <p class="section-intro">Every couple weeks, an honest check on each present focus — is it moving you toward the vision, what's getting in the way, and why you started it.</p>
+    </div>
+
+    <div id="reviewSetupNote" class="setup-note" style="display:none">
+      Not connected to your Sheet yet, so reviews won't be saved anywhere permanent. Deploy <code>Code.gs</code> and paste the Web App URL into <code>js/config.js</code> — see <code>SETUP.md</code>.
+    </div>
+
+    <div class="review-banner" id="reviewBanner2">
+      <span class="review-banner-text" id="reviewBannerText2"></span>
+      <a class="btn secondary" id="sheetLinkReview" href="#" target="_blank" rel="noopener">Open Sheet ↗</a>
+    </div>
+
+    <div class="review-progress-bar">
+      <div class="review-progress-fill" id="reviewProgressFill"></div>
+    </div>
+    <p class="review-progress-label" id="reviewProgressLabel">0 of 0 reviewed</p>
+
+    <div id="reviewForm"></div>
+
+    <button class="btn" id="saveReviewBtn" style="margin-top:6px">Save this review</button>
+    <div class="status-msg" id="reviewStatus"></div>
+
+    <div class="review-history">
+      <h3 style="margin-bottom:10px">Past reviews</h3>
+      <div id="reviewHistory"><div class="empty-state">No reviews saved yet.</div></div>
+    </div>
+  </section>
+
+</main>
+
+<script src="js/config.js"></script>
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
