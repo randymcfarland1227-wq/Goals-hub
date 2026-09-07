@@ -24,16 +24,20 @@ document.getElementById('todayLabel').textContent = new Date().toLocaleDateStrin
 // ---------------------------------------------------------------------
 document.getElementById('visionSubtitle').textContent = VISION.subtitle;
 document.getElementById('visionTitle').textContent = VISION.title;
-document.getElementById('dreamGrid').innerHTML = VISION.dreams.map(d => `
-  <div class="dream-card">
-    <div class="dream-top">
-      <span class="dream-icon-badge"><span class="dream-icon">${d.icon}</span></span>
-      <h3>${d.dream}</h3>
+
+function renderDreamGrid() {
+  document.getElementById('dreamGrid').innerHTML = VISION.dreams.map(d => `
+    <div class="dream-card">
+      <div class="dream-top">
+        <span class="dream-icon-badge"><span class="dream-icon">${d.icon}</span></span>
+        <h3>${d.dream}</h3>
+      </div>
+      <p class="details">${d.details}</p>
+      <div class="how"><b>How</b> ${d.how}</div>
     </div>
-    <p class="details">${d.details}</p>
-    <div class="how"><b>How</b> ${d.how}</div>
-  </div>
-`).join('');
+  `).join('');
+}
+renderDreamGrid();
 
 // ---------------------------------------------------------------------
 // Tabs
@@ -526,6 +530,34 @@ async function saveReview() {
 document.getElementById('saveReviewBtn').addEventListener('click', saveReview);
 
 // ---------------------------------------------------------------------
+// Vision + Present Focus content — read live from the "Dreams" and
+// "Efforts" tabs on the Sheet (auto-seeded once from the defaults
+// above, then those tabs become the source of truth). Falls back to
+// the built-in defaults above if not connected or the Sheet can't be
+// reached.
+// ---------------------------------------------------------------------
+async function loadGoalsData() {
+  if (!connected()) return;
+  try {
+    let dreams = await apiGet('dreams') || [];
+    if (!dreams.length) {
+      await apiPost('seedDreams', { rows: VISION.dreams });
+      dreams = await apiGet('dreams') || [];
+    }
+    if (dreams.length) VISION.dreams = dreams;
+
+    let efforts = await apiGet('efforts') || [];
+    if (!efforts.length) {
+      await apiPost('seedEfforts', { rows: EFFORTS });
+      efforts = await apiGet('efforts') || [];
+    }
+    if (efforts.length) EFFORTS.splice(0, EFFORTS.length, ...efforts);
+  } catch {
+    // Sheet unreachable — keep the built-in defaults from data.js.
+  }
+}
+
+// ---------------------------------------------------------------------
 // Init
 // ---------------------------------------------------------------------
 renderWheel();
@@ -538,3 +570,12 @@ renderReviewForm();
 renderReviewBanners();
 renderStatRow();
 loadReviews();
+
+loadGoalsData().then(() => {
+  renderDreamGrid();
+  renderWheel();
+  routeOverview();
+  renderList();
+  renderReviewForm();
+  renderStatRow();
+});
